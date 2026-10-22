@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor Deportivo Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2"></div>
+
+  <!-- Header -->
+  <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-gradient-to-tr from-amber-500 to-orange-500 rounded-xl shadow-lg shadow-amber-500/20 text-slate-950">
+          <i data-lucide="trophy" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">
+            Gestor Deportivo <span class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">PRO</span>
+          </h1>
+          <p class="text-xs text-slate-400">Sistema Integral de Torneos, Equipos y Jugadores</p>
+        </div>
+      </div>
+
+      <!-- Navegación de Pestañas -->
+      <nav class="flex bg-slate-950/80 p-1 rounded-xl border border-slate-800/80 shadow-inner">
+        <button onclick="cambiarTab('torneos')" id="btn-tab-torneos" class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition duration-200 bg-amber-500 text-slate-950 font-semibold shadow-md">
+          <i data-lucide="award" class="w-4 h-4"></i> Torneos
+        </button>
+        <button onclick="cambiarTab('equipos')" id="btn-tab-equipos" class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition duration-200 text-slate-400 hover:text-slate-200">
+          <i data-lucide="shield" class="w-4 h-4"></i> Equipos
+        </button>
+        <button onclick="cambiarTab('jugadores')" id="btn-tab-jugadores" class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition duration-200 text-slate-400 hover:text-slate-200">
+          <i data-lucide="users" class="w-4 h-4"></i> Jugadores
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="max-w-7xl mx-auto w-full flex-1 p-6 space-y-6">
+
+    <!-- Tarjetas Métricas / KPI -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-slate-400 font-medium">Total Torneos</p>
+          <p id="kpi-torneos" class="text-2xl font-bold text-amber-400 mt-1">0</p>
+        </div>
+        <div class="p-3 bg-amber-500/10 rounded-xl text-amber-400 border border-amber-500/20"><i data-lucide="trophy" class="w-5 h-5"></i></div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-slate-400 font-medium">Total Equipos</p>
+          <p id="kpi-equipos" class="text-2xl font-bold text-teal-400 mt-1">0</p>
+        </div>
+        <div class="p-3 bg-teal-500/10 rounded-xl text-teal-400 border border-teal-500/20"><i data-lucide="shield" class="w-5 h-5"></i></div>
+      </div>
+      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-slate-400 font-medium">Total Jugadores</p>
+          <p id="kpi-jugadores" class="text-2xl font-bold text-indigo-400 mt-1">0</p>
+        </div>
+        <div class="p-3 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20"><i data-lucide="users" class="w-5 h-5"></i></div>
+      </div>
+    </div>
+
+    <!-- Barra de Filtro y Acciones -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-900/50 p-3 rounded-2xl border border-slate-800/80">
+      <div class="relative w-full sm:w-80">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+        <input type="text" id="buscador" onkeyup="filtrarContenido()" placeholder="Buscar..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition">
+      </div>
+      <button id="btn-crear-accion" onclick="abrirModalDinamico()" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold px-5 py-2 rounded-xl flex items-center justify-center gap-2 text-sm transition shadow-lg shadow-amber-500/10">
+        <i data-lucide="plus" class="w-4 h-4"></i> <span id="texto-btn-accion">Nuevo Torneo</span>
+      </button>
+    </div>
+
+    <!-- SECCIÓN TORNEOS -->
+    <section id="seccion-torneos">
+      <div id="lista-torneos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </section>
+
+    <!-- SECCIÓN EQUIPOS -->
+    <section id="seccion-equipos" class="hidden">
+      <div id="lista-equipos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </section>
+
+    <!-- SECCIÓN JUGADORES -->
+    <section id="seccion-jugadores" class="hidden">
+      <div id="lista-jugadores" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DINÁMICO ÚNICO -->
+  <div id="modal-dinamico" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+      <h3 id="modal-titulo" class="text-lg font-bold mb-4 text-slate-100 flex items-center gap-2"></h3>
+      
+      <!-- Formulario Torneo -->
+      <form id="form-torneo" class="space-y-4 hidden">
+        <input type="hidden" id="torneo-id">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Torneo</label>
+          <input type="text" id="torneo-nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Categoría</label>
+          <select id="torneo-categoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+            <option value="Libre">Libre</option>
+            <option value="Sub-20">Sub-20</option>
+            <option value="Femenil">Femenil</option>
+            <option value="Veteranos">Veteranos</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" onclick="cerrarModal()" class="px-4 py-2 rounded-xl border border-slate-800 text-slate-400 text-sm hover:bg-slate-800">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm">Guardar</button>
+        </div>
+      </form>
+
+      <!-- Formulario Equipo -->
+      <form id="form-equipo" class="space-y-4 hidden">
+        <input type="hidden" id="equipo-id">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Nombre del Equipo</label>
+          <input type="text" id="equipo-nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Torneo Pertenece</label>
+          <select id="equipo-torneo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></select>
+        </div>
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" onclick="cerrarModal()" class="px-4 py-2 rounded-xl border border-slate-800 text-slate-400 text-sm hover:bg-slate-800">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm">Guardar</button>
+        </div>
+      </form>
+
+      <!-- Formulario Jugador -->
+      <form id="form-jugador" class="space-y-4 hidden">
+        <input type="hidden" id="jugador-id">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Nombre Completo</label>
+          <input type="text" id="jugador-nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Número de Camiseta / Dorsal</label>
+          <input type="number" id="jugador-numero" required min="1" max="99" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Equipo Pertenece</label>
+          <select id="jugador-equipo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-amber-500"></select>
+        </div>
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" onclick="cerrarModal()" class="px-4 py-2 rounded-xl border border-slate-800 text-slate-400 text-sm hover:bg-slate-800">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm">Guardar</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script src="/gestor-torneos/js/app.js"></script>
+</body>
+</html>
